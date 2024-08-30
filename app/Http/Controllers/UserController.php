@@ -10,10 +10,11 @@ use Illuminate\Http\Request;
  * Class UserController
  *
  * @package App\Http\Controllers
- * @author Vinícius Sarmento
- * @link https://github.com/ViniciusSCS
- * @date 2024-08-23 21:48:54
- * @copyright UniEVANGÉLICA
+ * @author Lucas Santiago 
+ * RA: 2210370
+ * @link https://github.com/LucaSantiag0
+ * 
+ * @copyright Lucas Santiago
  */
 class UserController extends Controller
 {
@@ -79,35 +80,43 @@ class UserController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
-        //
-        $data = $request->all();
-        try {
-            $user = User::findOrFail($id);
-            $user->update($data);
+{
 
-        } catch (\Exception $e) {
-            return [
-                'status' => 400,
-                'menssagem' => 'Erro ao atualizar usuário!!',
-                'error' => $e->getMessage()
-            ];
-        }
+    $request->validate([
+        'name' => 'required|string|max:255',
+    ]);
+
+    try {
+        $user = User::findOrFail($id);
+        $user->update($request->all());
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Usuário atualizado com sucesso!'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 400,
+            'message' => 'Erro ao atualizar usuário!',
+            'error' => $e->getMessage()
+        ], 400);
     }
 
     public function destroy(string $id)
-    {
-        //
-        try {
-            $user = User::findOrFail($id);
-            $user->delete();
+{
+    try {
+        $user = User::findOrFail($id);
+        $user->delete();
 
-        } catch (\Exception $e) {
-            return [
-                'status' => 400,
-                'menssagem' => 'Erro ao deletar usuário!!',
-                'error' => $e->getMessage()
-            ];
-        }
+        return response()->json([
+            'status' => 204,
+            'message' => 'Usuário deletado com sucesso!'
+        ], 204);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 400,
+            'message' => 'Erro ao deletar usuário!',
+            'error' => $e->getMessage()
+        ], 400);
     }
 }
