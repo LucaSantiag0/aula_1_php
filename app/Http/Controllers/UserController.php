@@ -109,9 +109,9 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json([
-            'status' => 204,
+            'status' => 200,
             'message' => 'Usuário deletado com sucesso!'
-        ], 204);
+        ], 200);
     } catch (\Exception $e) {
         return response()->json([
             'status' => 400,
