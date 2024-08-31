@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
  * Class UserController
  *
  * @package App\Http\Controllers
- * @author Lucas Santiago 
+ * @author Lucas Santiago
  * RA: 2210370
  * @link https://github.com/LucaSantiag0
  * 
@@ -23,13 +23,13 @@ class UserController extends Controller
      */
     public function index()
     {
-        $user = User::select('id', 'name', 'email')->paginate('2');
+        $users = User::select('id', 'name', 'email')->paginate(2);
 
-        return [
+        return response()->json([
             'status' => 200,
-            'menssagem' => 'Usuários encontrados!!',
-            'user' => $user
-        ];
+            'message' => 'Usuários encontrados!',
+            'users' => $users
+        ]);
     }
 
     /**
@@ -37,7 +37,7 @@ class UserController extends Controller
      */
     public function create()
     {
-
+        // Método não utilizado em APIs geralmente
     }
 
     /**
@@ -45,7 +45,7 @@ class UserController extends Controller
      */
     public function store(UserCreateRequest $request)
     {
-        $data = $request->all();
+        $data = $request->validated();
 
         $user = User::create([
             'name' => $data['name'],
@@ -53,11 +53,11 @@ class UserController extends Controller
             'password' => bcrypt($data['password']),
         ]);
 
-        return [
-            'status' => 200,
-            'menssagem' => 'Usuário cadastrado com sucesso!!',
+        return response()->json([
+            'status' => 201,
+            'message' => 'Usuário cadastrado com sucesso!',
             'user' => $user
-        ];
+        ]);
     }
 
     /**
@@ -65,7 +65,21 @@ class UserController extends Controller
      */
     public function show(string $id)
     {
-        //
+        try {
+            $user = User::findOrFail($id);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Usuário encontrado!',
+                'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Usuário não encontrado!',
+                'error' => $e->getMessage()
+            ], 404);
+        }
     }
 
     /**
@@ -73,50 +87,57 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        // Método não utilizado em APIs geralmente
     }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-{
-
-    $request->validate([
-        'name' => 'required|string|max:255',
-    ]);
-
-    try {
-        $user = User::findOrFail($id);
-        $user->update($request->all());
-
-        return response()->json([
-            'status' => 200,
-            'message' => 'Usuário atualizado com sucesso!'
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'password' => 'nullable|string|min:6',
         ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 400,
-            'message' => 'Erro ao atualizar usuário!',
-            'error' => $e->getMessage()
-        ], 400);
+
+        try {
+            $user = User::findOrFail($id);
+            $user->update($request->only('name', 'email', 'password'));
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Usuário atualizado com sucesso!',
+                'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Erro ao atualizar usuário!',
+                'error' => $e->getMessage()
+            ], 400);
+        }
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(string $id)
-{
-    try {
-        $user = User::findOrFail($id);
-        $user->delete();
+    {
+        try {
+            $user = User::findOrFail($id);
+            $user->delete();
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Usuário deletado com sucesso!'
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 400,
-            'message' => 'Erro ao deletar usuário!',
-            'error' => $e->getMessage()
-        ], 400);
+            return response()->json([
+                'status' => 200,
+                'message' => 'Usuário deletado com sucesso!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Erro ao deletar usuário!',
+                'error' => $e->getMessage()
+            ], 400);
+        }
     }
 }
